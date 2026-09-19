@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════
-# 🎮 GAME TOOL — BOT + API + MOBILECONFIG
+# 🎮 GAME TOOL — BOT + API + MOBILECONFIG (FULL)
 # ═══════════════════════════════════════════════════════════
 import telebot
 from telebot import types
@@ -8,11 +8,16 @@ from flask_cors import CORS
 import time, random, string, json, os, threading, io, uuid
 from datetime import datetime, timedelta
 
+# ═══════════════════════════════════════════════════════════
+# CẤU HÌNH — SỬA Ở ĐÂY
+# ═══════════════════════════════════════════════════════════
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8081809059:AAEV5cUJJ660gpKdLTlMta22Ary5pnRxy4Q")
-ADMIN_IDS = []
+ADMIN_IDS = []  # [] = ai cũng tạo key, [123] = chỉ admin
 DB_FILE = "keys.json"
 PORT = int(os.environ.get("PORT", 5000))
-WEB_URL = os.environ.get("WEB_URL", "https://game-tool.vercel.app")  # đổi thành link web của bạn
+
+# ✅ LINK NETLIFY CỦA BẠN — ĐÃ SỬA
+WEB_URL = os.environ.get("WEB_URL", "https://fascinating-dodol-b722f1.netlify.app")
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask(__name__)
@@ -134,7 +139,7 @@ Thiết bị: {phone}</string>
 </plist>'''
 
 # ═══════════════════════════════════════════════════════════
-# MENU BOT
+# BOT — MENU
 # ═══════════════════════════════════════════════════════════
 def main_menu():
     kb = types.InlineKeyboardMarkup(row_width=2)
@@ -171,8 +176,7 @@ def cmd_start(msg):
         f"🍎 `/getconfig <key>` — Tải file .mobileconfig\n"
         f"📋 `/listkey` — Danh sách\n"
         f"🗑️ `/delkey <key>` — Xóa\n"
-        f"🆔 `/myid` — Lấy ID\n\n"
-        f"💡 *Bấm nút bên dưới để tạo nhanh!*"
+        f"🆔 `/myid` — Lấy ID"
     )
     bot.send_message(msg.chat.id, text, parse_mode="Markdown", reply_markup=main_menu())
 
@@ -180,7 +184,6 @@ def cmd_start(msg):
 def cmd_help(msg):
     bot.send_message(msg.chat.id,
         "❓ *TRỢ GIÚP*\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🔑 `/newkey 7 3` → 3 key hạn 7 ngày\n"
         "🔍 `/checkkey VIP-ABC123` → kiểm tra\n"
         "🍎 `/getconfig VIP-ABC123` → tải .mobileconfig\n"
@@ -190,7 +193,7 @@ def cmd_help(msg):
         parse_mode="Markdown", reply_markup=back_button())
 
 # ═══════════════════════════════════════════════════════════
-# TẠO KEY
+# BOT — TẠO KEY
 # ═══════════════════════════════════════════════════════════
 def create_keys(chat_id, days, qty, user_id):
     db = load_db()
@@ -212,7 +215,7 @@ def create_keys(chat_id, days, qty, user_id):
         f"━━━━━━━━━━━━━━━━━━━━━━━\n\n"
     )
     for k in keys: text += f"🔑 `{k}`\n"
-    text += "\n💡 *Copy key → nhập web*\n🍎 */getconfig <key>* → tải .mobileconfig"
+    text += "\n💡 *Copy key → nhập web*\n🍎 `/getconfig <key>` → tải .mobileconfig"
     bot.send_message(chat_id, text, parse_mode="Markdown", reply_markup=main_menu())
 
 @bot.message_handler(commands=['newkey'])
@@ -226,7 +229,7 @@ def cmd_newkey(msg):
     create_keys(msg.chat.id, days, qty, msg.from_user.id)
 
 # ═══════════════════════════════════════════════════════════
-# CHECK KEY
+# BOT — CHECK KEY
 # ═══════════════════════════════════════════════════════════
 @bot.message_handler(commands=['checkkey'])
 def cmd_checkkey(msg):
@@ -249,28 +252,22 @@ def check_and_reply(chat_id, key):
         bot.send_message(chat_id, f"✅ Key `{key}` *CÒN HOẠT ĐỘNG*\n📅 `{exp}`\n⏳ *{d}n {h}h {m}p*", parse_mode="Markdown", reply_markup=main_menu())
 
 # ═══════════════════════════════════════════════════════════
-# LỆNH /getconfig — GỬI FILE .mobileconfig
+# BOT — /getconfig
 # ═══════════════════════════════════════════════════════════
 @bot.message_handler(commands=['getconfig'])
 def cmd_getconfig(msg):
     parts = msg.text.split(maxsplit=1)
     if len(parts) < 2:
-        bot.reply_to(msg, "⚠️ *Cú pháp:* `/getconfig <key>`\n📌 VD: `/getconfig VIP-ABC123`", parse_mode="Markdown")
-        return
+        bot.reply_to(msg, "⚠️ `/getconfig <key>`\n📌 VD: `/getconfig VIP-ABC123`", parse_mode="Markdown"); return
     key = parts[1].strip().upper()
     db = load_db()
-
     if key not in db:
-        bot.reply_to(msg, f"❌ Key `{key}` không tồn tại!", parse_mode="Markdown")
-        return
-
+        bot.reply_to(msg, f"❌ Key `{key}` không tồn tại!", parse_mode="Markdown"); return
     info = db[key]
     if info["exp"] < time.time():
         exp = datetime.fromtimestamp(info["exp"]).strftime("%d/%m/%Y %H:%M")
-        bot.reply_to(msg, f"⌛ Key `{key}` *ĐÃ HẾT HẠN!*\n📅 `{exp}`", parse_mode="Markdown")
-        return
+        bot.reply_to(msg, f"⌛ Key `{key}` *ĐÃ HẾT HẠN!*\n📅 `{exp}`", parse_mode="Markdown"); return
 
-    # Tạo file .mobileconfig
     config_content = build_mobileconfig(key, info["days"], info["exp"])
     config_bytes = io.BytesIO(config_content.encode("utf-8"))
     config_bytes.name = f"GameTool_{key}.mobileconfig"
@@ -280,8 +277,7 @@ def cmd_getconfig(msg):
     d = int(left//86400); h = int((left%86400)//3600)
 
     bot.send_document(
-        msg.chat.id,
-        config_bytes,
+        msg.chat.id, config_bytes,
         caption=(
             f"🍎 *FILE CẤU HÌNH .mobileconfig*\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -292,16 +288,16 @@ def cmd_getconfig(msg):
             f"━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"📱 *HƯỚNG DẪN CÀI TRÊN IPHONE:*\n"
             f"1️⃣ Tải file về iPhone\n"
-            f"2️⃣ Mở file → iOS hỏi cài Profile → *Cho phép*\n"
-            f"3️⃣ Vào *Cài đặt → Cài đặt chung → VPN & Thiết bị*\n"
-            f"4️⃣ Bấm Profile → *Cài đặt* → Nhập mật khẩu → *Cài*\n"
-            f"5️⃣ Xong! Icon GAME TOOL xuất hiện ✅"
+            f"2️⃣ Mở file → Cho phép\n"
+            f"3️⃣ Cài đặt → Cài đặt chung → VPN & Thiết bị\n"
+            f"4️⃣ Bấm Profile → Cài đặt → Nhập mật khẩu → Cài\n"
+            f"5️⃣ Xong! ✅"
         ),
         parse_mode="Markdown"
     )
 
 # ═══════════════════════════════════════════════════════════
-# LIST / DELETE / MYID
+# BOT — LIST / DELETE / MYID
 # ═══════════════════════════════════════════════════════════
 @bot.message_handler(commands=['listkey'])
 def cmd_listkey(msg):
@@ -333,7 +329,7 @@ def cmd_delkey(msg):
 def cmd_myid(msg): bot.reply_to(msg, f"🆔 `{msg.from_user.id}`", parse_mode="Markdown")
 
 # ═══════════════════════════════════════════════════════════
-# CALLBACK
+# BOT — CALLBACK
 # ═══════════════════════════════════════════════════════════
 @bot.callback_query_handler(func=lambda c: True)
 def handle_callback(call):
@@ -366,15 +362,7 @@ def handle_callback(call):
         except: bot.send_message(chat_id, text, parse_mode="Markdown", reply_markup=back_button())
 
     elif data == "help":
-        text = (
-            "❓ *TRỢ GIÚP*\n"
-            "🔑 `/newkey <ngày> <số>`\n"
-            "🔍 `/checkkey <key>`\n"
-            "🍎 `/getconfig <key>` → file .mobileconfig\n"
-            "📋 `/listkey`\n"
-            "🗑️ `/delkey <key>`\n"
-            "🆔 `/myid`"
-        )
+        text = "❓ *TRỢ GIÚP*\n🔑 `/newkey <ngày> <số>`\n🔍 `/checkkey <key>`\n🍎 `/getconfig <key>`\n📋 `/listkey`\n🗑️ `/delkey <key>`\n🆔 `/myid`"
         try: bot.edit_message_text(text, chat_id, call.message.message_id, parse_mode="Markdown", reply_markup=back_button())
         except: bot.send_message(chat_id, text, parse_mode="Markdown", reply_markup=back_button())
 
@@ -385,7 +373,7 @@ def handle_text(msg):
     else: bot.reply_to(msg, "💡 Gõ `/start`!", parse_mode="Markdown")
 
 # ═══════════════════════════════════════════════════════════
-# API ENDPOINTS
+# API — CHECK KEY
 # ═══════════════════════════════════════════════════════════
 @app.route("/api/check", methods=["POST", "OPTIONS"])
 def api_check():
@@ -403,33 +391,30 @@ def api_check():
                     "exp": info["exp"], "left_seconds": int(info["exp"] - now),
                     "expired_at": datetime.fromtimestamp(info["exp"]).strftime("%d/%m/%Y %H:%M")})
 
-# ═══ API: TẢI FILE .mobileconfig TỪ WEB ═══
+# ═══════════════════════════════════════════════════════════
+# API — MOBILECONFIG
+# ═══════════════════════════════════════════════════════════
 @app.route("/api/mobileconfig", methods=["POST", "OPTIONS"])
 def api_mobileconfig():
     if request.method == "OPTIONS": return "", 200
     data = request.get_json() or {}
     key = (data.get("key") or "").strip().upper()
     phone = (data.get("phone") or "iPhone").strip()
-
     if not key: return jsonify({"status": "invalid", "message": "Chưa có key"}), 400
     db = load_db()
     if key not in db: return jsonify({"status": "invalid", "message": "Key không tồn tại"}), 404
     info = db[key]
     if info["exp"] < time.time():
         return jsonify({"status": "expired", "message": "Key đã hết hạn"}), 403
-
-    # Tạo file
     config_content = build_mobileconfig(key, info["days"], info["exp"], phone)
     config_bytes = io.BytesIO(config_content.encode("utf-8"))
     config_bytes.name = f"GameTool_{key}.mobileconfig"
+    return send_file(config_bytes, mimetype="application/x-apple-aspen-config",
+                     as_attachment=True, download_name=f"GameTool_{key}.mobileconfig")
 
-    return send_file(
-        config_bytes,
-        mimetype="application/x-apple-aspen-config",
-        as_attachment=True,
-        download_name=f"GameTool_{key}.mobileconfig"
-    )
-
+# ═══════════════════════════════════════════════════════════
+# API — INFO / HEALTH / ROOT
+# ═══════════════════════════════════════════════════════════
 @app.route("/api/info")
 def api_info():
     db = load_db(); now = time.time()
