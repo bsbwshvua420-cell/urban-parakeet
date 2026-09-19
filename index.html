@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CÔNG CỤ HỖ TRỢ GAME</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Segoe UI',system-ui,sans-serif;}
+html,body{background:radial-gradient(circle at top,#1a0000 0%,#000 60%);color:#fff;min-height:100vh;overflow-x:hidden;padding-bottom:80px;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,0,60,.15),transparent 45%),radial-gradient(circle at 80% 70%,rgba(255,43,43,.12),transparent 45%);pointer-events:none;z-index:0;}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.header{position:sticky;top:0;z-index:100;background:linear-gradient(180deg,rgba(20,0,0,.98),rgba(10,0,0,.92));backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,43,43,.3);padding:14px;text-align:center;box-shadow:0 4px 30px rgba(255,0,60,.25);}
+.header h1{font-size:18px;letter-spacing:3px;font-weight:900;background:linear-gradient(90deg,#fff,#ff2b2b,#fff);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shine 3s linear infinite;text-transform:uppercase;}
+@keyframes shine{to{background-position:200% center}}
+.header .sub{font-size:10px;color:#ff2b2b;letter-spacing:4px;margin-top:3px;opacity:.85;font-weight:700;}
+.marquee{background:linear-gradient(90deg,#1a0000,#2a0000,#1a0000);border-top:1px solid rgba(255,43,43,.3);border-bottom:1px solid rgba(255,43,43,.3);overflow:hidden;white-space:nowrap;padding:8px 0;}
+.marquee span{display:inline-block;padding-left:100%;animation:marquee 18s linear infinite;font-size:12px;font-weight:800;color:#ff2b2b;text-shadow:0 0 10px #ff003c;letter-spacing:1px;}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+.container{position:relative;z-index:2;max-width:600px;margin:0 auto;padding:16px;}
+.card{background:rgba(20,20,20,.6);backdrop-filter:blur(20px);border:1px solid rgba(255,43,43,.3);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 10px 40px rgba(0,0,0,.6);animation:cardIn .6s backwards;}
+.card:nth-child(1){animation-delay:.05s}.card:nth-child(2){animation-delay:.15s}.card:nth-child(3){animation-delay:.25s}.card:nth-child(4){animation-delay:.35s}.card:nth-child(5){animation-delay:.45s}
+@keyframes cardIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.card-title{font-size:13px;font-weight:900;color:#ff2b2b;letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:8px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,0,60,.5);}
+.card-title::before{content:'';width:4px;height:16px;background:#ff2b2b;border-radius:2px;box-shadow:0 0 10px #ff2b2b;}
+.input{width:100%;background:#0a0a0a;border:1.5px solid rgba(255,43,43,.35);color:#fff;padding:14px 16px;border-radius:12px;font-size:14px;outline:none;transition:.3s;font-weight:600;margin-bottom:12px;}
+.input::placeholder{color:#555;}
+.input:focus{border-color:#ff2b2b;box-shadow:0 0 0 4px rgba(255,43,43,.15),0 0 20px rgba(255,0,60,.3);}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:14px;font-weight:800;letter-spacing:1.5px;cursor:pointer;transition:.25s;text-transform:uppercase;}
+.btn-red{background:linear-gradient(135deg,#ff2b2b,#c40000);color:#fff;box-shadow:0 6px 20px rgba(255,0,60,.45);}
+.btn-red:active{transform:scale(.97);}
+.btn-outline{background:transparent;color:#ff2b2b;border:1.5px solid #ff2b2b;margin-bottom:10px;}
+.btn-outline:active{background:rgba(255,43,43,.15);}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.5);}
+.feature{display:flex;align-items:center;justify-content:space-between;padding:14px;background:#0f0f0f;border-radius:12px;margin-bottom:10px;border:1px solid rgba(255,43,43,.15);transition:.3s;}
+.feature.locked{opacity:.45;filter:grayscale(.7);pointer-events:none;}
+.feature.on{border-color:#ff2b2b;box-shadow:0 0 20px rgba(255,0,60,.25);}
+.feature-left{display:flex;align-items:center;gap:12px;}
+.feature-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#ff2b2b,#8b0000);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 15px rgba(255,0,60,.4);}
+.feature-name{font-size:13px;font-weight:700;}
+.feature-desc{font-size:10px;color:#bdbdbd;margin-top:2px;}
+.switch{position:relative;width:52px;height:28px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;inset:0;background:#2a2a2a;border-radius:28px;transition:.3s;border:1px solid #333;}
+.slider::before{content:'';position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
+input:checked + .slider{background:linear-gradient(135deg,#ff2b2b,#c40000);border-color:#ff2b2b;box-shadow:0 0 15px rgba(255,0,60,.6);}
+input:checked + .slider::before{transform:translateX(24px);}
+.key-status{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;font-size:12px;font-weight:700;margin-bottom:12px;}
+.key-status.active{background:rgba(0,255,120,.08);border:1px solid rgba(0,255,120,.4);color:#0f0;}
+.key-status.expired{background:rgba(255,0,60,.1);border:1px solid rgba(255,0,60,.5);color:#ff2b2b;animation:pulse 1.5s infinite;}
+.key-status.none{background:rgba(255,255,255,.03);border:1px solid #333;color:#888;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-100px);background:linear-gradient(135deg,#1a0000,#0a0000);border:1.5px solid #ff2b2b;color:#fff;padding:14px 22px;border-radius:14px;font-size:13px;font-weight:800;z-index:9999;box-shadow:0 10px 40px rgba(255,0,60,.6);opacity:0;transition:.4s;letter-spacing:1px;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.success{border-color:#0f0;box-shadow:0 10px 40px rgba(0,255,100,.5);}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px dashed rgba(255,43,43,.2);font-size:12px;}
+.info-row:last-child{border:none;}
+.info-row span:first-child{color:#bdbdbd;}
+.info-row span:last-child{color:#ff2b2b;font-weight:800;}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:linear-gradient(0deg,rgba(10,0,0,.98),rgba(20,0,0,.92));backdrop-filter:blur(20px);border-top:1px solid rgba(255,43,43,.3);display:flex;justify-content:space-around;padding:10px 0 14px;}
+.nav-item{flex:1;text-align:center;color:#666;font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:.3s;}
+.nav-item.active{color:#ff2b2b;text-shadow:0 0 10px #ff003c;}
+.nav-item .ico{font-size:20px;display:block;margin-bottom:2px;}
+.sensi-box{text-align:center;padding:20px 12px;background:radial-gradient(circle,rgba(255,0,60,.15),transparent 70%);border-radius:16px;border:1px solid rgba(255,43,43,.3);margin-bottom:12px;}
+.sensi-val{font-size:42px;font-weight:900;color:#ff2b2b;text-shadow:0 0 25px #ff003c;letter-spacing:2px;}
+.sensi-label{font-size:11px;color:#bdbdbd;letter-spacing:3px;margin-top:4px;}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<canvas id="bg-canvas"></canvas>
+
+<div class="header">
+  <h1>CÔNG CỤ HỖ TRỢ GAME</h1>
+  <div class="sub">★ PREMIUM EDITION ★</div>
+</div>
+
+<div class="marquee">
+  <span>⚡ HỖ TRỢ NHẠY TÂM FREE FIRE • LẤY ĐỘ NHẠY IPHONE • TỐI ƯU CẤU HÌNH • AN TOÀN 100% • NHẬP KEY ĐỂ SỬ DỤNG ⚡</span>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-title">🔑 Kích Hoạt Key</div>
+    <div class="key-status none" id="keyStatus"><span>⛔</span><span id="keyText">Chưa nhập key</span></div>
+    <input type="text" class="input" id="keyInput" placeholder="Nhập key (VD: VIP-XXXXXXXX)" autocomplete="off">
+    <button class="btn btn-red" id="activeBtn" onclick="activeKey()">⚡ KÍCH HOẠT NGAY</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📱 Thông Tin Thiết Bị</div>
+    <input type="text" class="input" id="phoneInput" placeholder="Nhập tên điện thoại">
+    <button class="btn btn-outline" onclick="savePhone()">💾 LƯU THÔNG TIN</button>
+    <div style="margin-top:14px">
+      <div class="info-row"><span>Thiết bị</span><span id="infoPhone">— Chưa nhập —</span></div>
+      <div class="info-row"><span>Hệ điều hành</span><span id="infoOS">—</span></div>
+      <div class="info-row"><span>Độ nhạy đề xuất</span><span id="infoSensi">—</span></div>
+      <div class="info-row"><span>Trạng thái</span><span id="infoStatus">Chờ kích hoạt</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎯 Độ Nhạy Tâm</div>
+    <div class="sensi-box">
+      <div class="sensi-val" id="sensiVal">--</div>
+      <div class="sensi-label">ĐỘ NHẠY HỖ TRỢ</div>
+    </div>
+    <button class="btn btn-red" id="sensiBtn" onclick="calcSensi()" disabled>🔍 TÍNH ĐỘ NHẠY TÂM</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚙️ Chức Năng Hỗ Trợ</div>
+
+    <div class="feature locked" id="feat1">
+      <div class="feature-left"><div class="feature-icon">🎯</div><div><div class="feature-name">Nhẹ Tâm</div><div class="feature-desc">Giảm rung, mượt tâm</div></div></div>
+      <label class="switch"><input type="checkbox" id="sw1" onchange="toggleFeature(1,this)"><span class="slider"></span></label>
+    </div>
+
+    <div class="feature locked" id="feat2">
+      <div class="feature-left"><div class="feature-icon">💧</div><div><div class="feature-name">Đầm Tâm</div><div class="feature-desc">Ổn định khi bắn</div></div></div>
+      <label class="switch"><input type="checkbox" id="sw2" onchange="toggleFeature(2,this)"><span class="slider"></span></label>
+    </div>
+
+    <div class="feature locked" id="feat3">
+      <div class="feature-left"><div class="feature-icon">🍎</div><div><div class="feature-name">Lấy Độ Nhạy iPhone</div><div class="feature-desc">Đồng bộ cảm biến iOS</div></div></div>
+      <label class="switch"><input type="checkbox" id="sw3" onchange="toggleFeature(3,this)"><span class="slider"></span></label>
+    </div>
+
+    <div class="feature locked" id="feat4">
+      <div class="feature-left"><div class="feature-icon">⚡</div><div><div class="feature-name">Tối Ưu Cấu Hình</div><div class="feature-desc">Giảm lag, tăng FPS</div></div></div>
+      <label class="switch"><input type="checkbox" id="sw4" onchange="toggleFeature(4,this)"><span class="slider"></span></label>
+    </div>
+
+    <div class="feature locked" id="feat5">
+      <div class="feature-left"><div class="feature-icon">🔥</div><div><div class="feature-name">Kéo Tâm Free Fire</div><div class="feature-desc">Hỗ trợ kéo tâm chuẩn</div></div></div>
+      <label class="switch"><input type="checkbox" id="sw5" onchange="toggleFeature(5,this)"><span class="slider"></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💾 Cấu Hình & Hồ Sơ</div>
+    <button class="btn btn-outline" onclick="downloadConfig()" id="dlConfigBtn" disabled>⬇️ TẢI CẤU HÌNH</button>
+    <button class="btn btn-outline" onclick="downloadProfile()" id="dlProfileBtn" disabled>📄 TẢI HỒ SƠ</button>
+  </div>
+
+</div>
+
+<div class="nav">
+  <div class="nav-item active"><span class="ico">🏠</span>TRANG CHỦ</div>
+  <div class="nav-item"><span class="ico">⚙️</span>CÀI ĐẶT</div>
+  <div class="nav-item"><span class="ico">💬</span>HỖ TRỢ</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ⚠️⚠️⚠️ SỬA DUY NHẤT DÒNG NÀY ⚠️⚠️⚠️
+// ═══════════════════════════════════════════════════════════
+// Nếu web chạy cùng VPS với API:
+//   const API_URL = "http://IP_VPS:5000";
+//
+// Nếu có domain: 
+//   const API_URL = "https://api.tenmiencuaban.com";
+//
+// ⬇️ SỬA Ở ĐÂY ⬇️
+const API_URL = "http://localhost:5000";
+// ⬆️ SỬA Ở ĐÂY ⬆️
+// ═══════════════════════════════════════════════════════════
+
+let currentKey=null, keyInfo=null, keyTimer=null, phoneSaved="";
+
+function showToast(msg,type="success"){
+  const t=document.getElementById("toast");
+  t.textContent=msg;t.className="toast show "+type;
+  clearTimeout(t._tm);t._tm=setTimeout(()=>t.className="toast "+type,2500);
+  if(navigator.vibrate)navigator.vibrate(type==="success"?[30]:[50,30,50]);
+}
+
+async function activeKey(){
+  const input=document.getElementById("keyInput").value.trim().toUpperCase();
+  if(!input){showToast("⚠️ Vui lòng nhập key!","error");return;}
+  const btn=document.getElementById("activeBtn");
+  btn.disabled=true;btn.innerHTML='<span class="loader"></span> ĐANG KIỂM TRA...';
+  try{
+    const res=await fetch(API_URL+"/api/check",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({key:input})
+    });
+    const data=await res.json();
+    if(data.status==="active"){
+      currentKey=input;keyInfo={exp:data.exp*1000,label:`Key ${data.days} ngày`};
+      saveToStorage();
+      showKeyStatus("active",`✅ Key hoạt động — Còn ${formatTime(data.left_seconds*1000)}`);
+      showToast("✅ KÍCH HOẠT THÀNH CÔNG!","success");
+      unlockAll();startKeyTimer();
+    }else if(data.status==="expired"){
+      showKeyStatus("expired",`⌛ Key đã hết hạn lúc ${data.expired_at}!`);
+      showToast("❌ KEY ĐÃ HẾT HẠN!","error");lockAll();
+    }else{
+      showKeyStatus("expired","❌ Key không hợp lệ!");
+      showToast("❌ KEY KHÔNG HỢP LỆ!","error");lockAll();
+    }
+  }catch(e){
+    showToast("🌐 Không kết nối server!","error");
+    showKeyStatus("expired","❌ Lỗi kết nối API!");
+  }
+  finally{btn.disabled=false;btn.innerHTML="⚡ KÍCH HOẠT NGAY";}
+}
+
+function showKeyStatus(type,text){
+  document.getElementById("keyStatus").className="key-status "+type;
+  document.getElementById("keyText").textContent=text;
+}
+function formatTime(ms){
+  if(ms<=0)return"0s";
+  const d=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+  if(d>0)return`${d}n ${h}h ${m}p`;
+  if(h>0)return`${h}h ${m}p ${s}s`;
+  if(m>0)return`${m}p ${s}s`;return`${s}s`;
+}
+function startKeyTimer(){
+  clearInterval(keyTimer);
+  keyTimer=setInterval(()=>{
+    if(!keyInfo)return;
+    const left=keyInfo.exp-Date.now();
+    if(left<=0){
+      showKeyStatus("expired","⌛ Key đã hết hạn! Vui lòng nhập key mới.");
+      showToast("❌ KEY ĐÃ HẾT HẠN!","error");lockAll();clearInterval(keyTimer);
+      currentKey=null;keyInfo=null;localStorage.removeItem("gamekey");return;
+    }
+    showKeyStatus("active",`✅ Key hoạt động — Còn ${formatTime(left)}`);
+  },1000);
+}
+function lockAll(){
+  for(let i=1;i<=5;i++){
+    document.getElementById("feat"+i).classList.add("locked");
+    document.getElementById("sw"+i).disabled=true;
+    document.getElementById("sw"+i).checked=false;
+    document.getElementById("feat"+i).classList.remove("on");
+  }
+  document.getElementById("sensiBtn").disabled=true;
+  document.getElementById("dlConfigBtn").disabled=true;
+  document.getElementById("dlProfileBtn").disabled=true;
+  document.getElementById("infoStatus").textContent="Chưa kích hoạt";
+}
+function unlockAll(){
+  for(let i=1;i<=5;i++){
+    document.getElementById("feat"+i).classList.remove("locked");
+    document.getElementById("sw"+i).disabled=false;
+  }
+  document.getElementById("sensiBtn").disabled=false;
+  document.getElementById("dlConfigBtn").disabled=false;
+  document.getElementById("dlProfileBtn").disabled=false;
+  document.getElementById("infoStatus").textContent="Đã kích hoạt";
+}
+const featureNames={1:"Nhẹ Tâm",2:"Đầm Tâm",3:"Lấy Độ Nhạy iPhone",4:"Tối Ưu Cấu Hình",5:"Kéo Tâm Free Fire"};
+function toggleFeature(id,el){
+  if(!keyInfo||keyInfo.exp<Date.now()){el.checked=false;showToast("❌ Key đã hết hạn!","error");return;}
+  const card=document.getElementById("feat"+id);
+  if(el.checked){card.classList.add("on");showToast(`✅ ĐÃ BẬT: ${featureNames[id]}`,"success");}
+  else{card.classList.remove("on");showToast(`⛔ ĐÃ TẮT: ${featureNames[id]}`,"error");}
+}
+function savePhone(){
+  if(!keyInfo||keyInfo.exp<Date.now()){showToast("❌ Cần key hợp lệ!","error");return;}
+  const p=document.getElementById("phoneInput").value.trim();
+  if(!p){showToast("⚠️ Nhập tên điện thoại!","error");return;}
+  phoneSaved=p;localStorage.setItem("gamephone",p);
+  document.getElementById("infoPhone").textContent=p;
+  document.getElementById("infoOS").textContent=/iphone|ipad/i.test(p)?"iOS":"Android";
+  document.getElementById("infoSensi").textContent="Sẵn sàng tính";
+  showToast("💾 ĐÃ LƯU THÔNG TIN!","success");
+}
+function calcSensi(){
+  if(!keyInfo||keyInfo.exp<Date.now()){showToast("❌ Key đã hết hạn!","error");return;}
+  if(!phoneSaved){showToast("⚠️ Nhập tên điện thoại trước!","error");return;}
+  const el=document.getElementById("sensiVal");el.textContent="...";
+  let count=0;
+  const itv=setInterval(()=>{
+    el.textContent=Math.floor(Math.random()*100);
+    if(++count>15){
+      clearInterval(itv);
+      const base=/iphone|ipad/i.test(phoneSaved)?88:92;
+      const val=base+Math.floor(Math.random()*6);
+      el.textContent=val;
+      document.getElementById("infoSensi").textContent=val+" (Free Fire)";
+      showToast(`🎯 ĐỘ NHẠY: ${val}`,"success");
+    }
+  },60);
+}
+function downloadConfig(){
+  if(!keyInfo||keyInfo.exp<Date.now()){showToast("❌ Key đã hết hạn!","error");return;}
+  const data={key:currentKey,thietBi:phoneSaved||"Chưa nhập",doNhay:document.getElementById("sensiVal").textContent,chucNang:{nheTam:sw1.checked,damTam:sw2.checked,layDoNhayIP:sw3.checked,toiUuCauHinh:sw4.checked,keoTamFF:sw5.checked},ngayTao:new Date().toLocaleString("vi-VN")};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="cau-hinh-game.json";a.click();
+  showToast("⬇️ ĐÃ TẢI CẤU HÌNH!","success");
+}
+function downloadProfile(){
+  if(!keyInfo||keyInfo.exp<Date.now()){showToast("❌ Key đã hết hạn!","error");return;}
+  const text=`CÔNG CỤ HỖ TRỢ GAME - HỒ SƠ\n══════════════════════════\n🔑 Key        : ${currentKey}\n⏳ Hết hạn    : ${keyInfo?new Date(keyInfo.exp).toLocaleString("vi-VN"):"—"}\n📱 Thiết bị   : ${phoneSaved||"Chưa nhập"}\n🎯 Độ nhạy    : ${document.getElementById("sensiVal").textContent}\n⚙️  Nhẹ Tâm    : ${sw1.checked?"BẬT":"TẮT"}\n💧 Đầm Tâm    : ${sw2.checked?"BẬT":"TẮT"}\n🍎 Nhạy iPhone: ${sw3.checked?"BẬT":"TẮT"}\n⚡ Tối ưu    : ${sw4.checked?"BẬT":"TẮT"}\n🔥 Kéo tâm FF : ${sw5.checked?"BẬT":"TẮT"}\n📅 Ngày tạo   : ${new Date().toLocaleString("vi-VN")}`;
+  const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ho-so-thiet-bi.txt";a.click();
+  showToast("📄 ĐÃ TẢI HỒ SƠ!","success");
+}
+function saveToStorage(){localStorage.setItem("gamekey",JSON.stringify({key:currentKey,exp:keyInfo.exp}));}
+async function restore(){
+  const p=localStorage.getItem("gamephone");
+  if(p){phoneSaved=p;document.getElementById("phoneInput").value=p;document.getElementById("infoPhone").textContent=p;document.getElementById("infoOS").textContent=/iphone|ipad/i.test(p)?"iOS":"Android";}
+  const s=localStorage.getItem("gamekey");
+  if(!s)return;
+  try{
+    const o=JSON.parse(s);document.getElementById("keyInput").value=o.key;
+    const res=await fetch(API_URL+"/api/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key:o.key})});
+    const data=await res.json();
+    if(data.status==="active"){
+      currentKey=o.key;keyInfo={exp:data.exp*1000,label:`Key ${data.days} ngày`};
+      showKeyStatus("active",`✅ Key hoạt động — Còn ${formatTime(data.left_seconds*1000)}`);
+      unlockAll();startKeyTimer();
+    }else{showKeyStatus("expired","⌛ Key đã hết hạn!");lockAll();localStorage.removeItem("gamekey");}
+  }catch(e){showKeyStatus("expired","🌐 Không kết nối server.");}
+}
+
+// Particle background
+const canvas=document.getElementById("bg-canvas"),ctx=canvas.getContext("2d");let particles=[];
+function resizeCanvas(){canvas.width=innerWidth;canvas.height=innerHeight;}
+resizeCanvas();addEventListener("resize",resizeCanvas);
+for(let i=0;i<50;i++)particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.8+0.4,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,alpha:Math.random()*.5+.2});
+function drawParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){
+    const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<120){ctx.beginPath();ctx.strokeStyle=`rgba(255,43,43,${.12*(1-dist/120)})`;ctx.lineWidth=.6;ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();}
+  }
+  particles.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,43,43,${p.alpha})`;ctx.shadowBlur=10;ctx.shadowColor="#ff003c";ctx.fill();ctx.shadowBlur=0;p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>canvas.width)p.vx*=-1;if(p.y<0||p.y>canvas.height)p.vy*=-1;});
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+addEventListener("load",()=>{lockAll();restore();setTimeout(()=>showToast("👋 CHÀO MỪNG!","success"),500);});
+</script>
+</body>
+</html>
